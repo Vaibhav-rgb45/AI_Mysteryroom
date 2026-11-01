@@ -1,0 +1,11 @@
+import { Router } from 'express';
+import * as controller from '../controllers/caseController.js';
+import { actionLimiter, createLimiter } from '../middleware/rateLimiter.js';
+const router=Router();
+router.post('/',createLimiter,controller.create);
+router.get('/:id',controller.getActive);
+router.post('/:id/clues/:clueId/discover',actionLimiter,controller.discover);
+router.post('/:id/hints',actionLimiter,controller.hint);
+router.post('/:id/accuse',actionLimiter,controller.accuse);
+router.get('/:id/result',controller.result);
+export default router;

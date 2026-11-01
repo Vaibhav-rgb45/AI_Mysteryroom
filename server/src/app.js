@@ -1,0 +1,16 @@
+import express from 'express';
+import cors from 'cors';
+import { randomUUID } from 'node:crypto';
+import caseRoutes from './routes/caseRoutes.js';
+import { errorHandler } from './middleware/errorHandler.js';
+const app=express();
+app.disable('x-powered-by');
+app.use((req,res,next)=>{req.requestId=randomUUID();res.setHeader('X-Request-Id',req.requestId);next();});
+const origins=(process.env.CLIENT_ORIGIN||'http://localhost:5173').split(',').map(v=>v.trim());
+app.use(cors({origin(origin,callback){if(!origin||origins.includes(origin))return callback(null,true);callback(new Error('Origin is not allowed.'));}}));
+app.use(express.json({limit:'20kb'}));
+app.get('/api/health',(req,res)=>res.json({success:true,data:{status:'ok'}}));
+app.use('/api/cases',caseRoutes);
+app.use((req,res)=>res.status(404).json({success:false,error:{code:'NOT_FOUND',message:'This endpoint does not exist.'}}));
+app.use(errorHandler);
+export default app;
